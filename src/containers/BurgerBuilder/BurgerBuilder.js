@@ -5,6 +5,9 @@ import Burger from "../../components/Burger/Burger";
 import BuildControls from "../../components/BuildControls/BuildControls";
 import Modal from "../../components/UI/Modal";
 import OrderSummary from "../../components/Burger/OrderSummary/OrderSummary";
+import Spinner from "../../components/UI/Spinner/Spinner";
+import withErrorHandler from "../../withErrorHandler/withErrorHandler";
+import firebase from "../../api/firebase";
 
 const INGREDIENT_PRICES = {
   salad: 200,
@@ -23,7 +26,8 @@ class BurgerBuilder extends Component {
     },
     totalPrice: 100,
     isPurchaseable: false,
-    isPurchasing: false
+    isPurchasing: false,
+    isLoading: false
   };
 
   addIngredientHandler = type => {
@@ -57,6 +61,31 @@ class BurgerBuilder extends Component {
 
     this.setState({ isPurchaseable: sum > 0 });
   };
+
+  purchaseContinued = () => {
+    this.setState({ isLoading: true });
+    const order = {
+      customer: {
+        name: "Olawale Afuye ",
+        phone: null,
+        address: "42 Otunba Adeshilewa street",
+        email: "walosha.com"
+      },
+      ingredient: this.state.ingredients,
+      price: this.state.totalPrice
+    };
+
+    firebase
+      .post("/orders.json", order)
+      .then(() => {
+        this.setState({ isLoading: false });
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({ isLoading: false });
+      });
+  };
+
   render() {
     let disabled = { ...this.state.ingredients };
 
@@ -64,17 +93,24 @@ class BurgerBuilder extends Component {
       disabled = { ...disabled, [item]: disabled[item] === 0 };
     }
 
+    let orderSummary = (
+      <OrderSummary
+        price={this.state.totalPrice}
+        isPurchasingHandle={this.isPurchasingHandle}
+        purchaseContinued={this.purchaseContinued}
+        ingredients={this.state.ingredients}
+      />
+    );
+    if (this.state.isLoading) {
+      orderSummary = <Spinner></Spinner>;
+    }
     return (
       <Aux>
         <Modal
           isPurchasingHandle={this.isPurchasingHandle}
           show={this.state.isPurchasing}
         >
-          <OrderSummary
-            price={this.state.totalPrice}
-            isPurchasingHandle={this.isPurchasingHandle}
-            ingredients={this.state.ingredients}
-          />
+          {orderSummary}
         </Modal>
         <Burger ingredients={this.state.ingredients} />
         <BuildControls
@@ -90,4 +126,4 @@ class BurgerBuilder extends Component {
   }
 }
 
-export default BurgerBuilder;
+export default withErrorHandler(BurgerBuilder, firebase);
