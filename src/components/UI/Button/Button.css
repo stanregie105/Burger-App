@@ -1,0 +1,19 @@
+.Button {
+  outline: none;
+  border: none;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-right: 4px;
+  font-size: 1.3rem;
+  background-color: transparent;
+  padding: 6px;
+  margin-right: 8px;
+}
+
+.Danger {
+  background-color: rgba(189, 33, 33, 0.63);
+}
+
+.Success {
+  background-color: rgba(192, 177, 37, 0.603);
+}
