@@ -18,17 +18,24 @@ const INGREDIENT_PRICES = {
 
 class BurgerBuilder extends Component {
   state = {
-    ingredients: {
-      salad: 0,
-      bacon: 0,
-      cheese: 0,
-      meat: 0
-    },
+    ingredients: null,
     totalPrice: 100,
     isPurchaseable: false,
     isPurchasing: false,
-    isLoading: false
+    isLoading: false,
+    error: false
   };
+
+  componentDidMount() {
+    firebase
+      .get("/ingredients.json")
+      .then(response => {
+        this.setState({ ingredients: response.data });
+      })
+      .catch(err => {
+        this.setState({ error: true });
+      });
+  }
 
   addIngredientHandler = type => {
     const quantity = this.state.ingredients[type] + 1;
@@ -63,10 +70,10 @@ class BurgerBuilder extends Component {
   };
 
   purchaseContinued = () => {
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, isPurchasing: false });
     const order = {
       customer: {
-        name: "Olawale Afuye ",
+        name: "coah ",
         phone: null,
         address: "42 Otunba Adeshilewa street",
         email: "walosha.com"
@@ -88,7 +95,6 @@ class BurgerBuilder extends Component {
 
   render() {
     let disabled = { ...this.state.ingredients };
-
     for (let item in disabled) {
       disabled = { ...disabled, [item]: disabled[item] === 0 };
     }
@@ -104,6 +110,7 @@ class BurgerBuilder extends Component {
     if (this.state.isLoading) {
       orderSummary = <Spinner></Spinner>;
     }
+
     return (
       <Aux>
         <Modal

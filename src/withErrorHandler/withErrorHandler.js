@@ -8,9 +8,10 @@ const withErrorHandler = (WrappedComponent, firebase) => {
       error: null
     };
 
-    componentDidMount() {
-      firebase.interceptors.request.use(() => {
+    componentWillMount() {
+      firebase.interceptors.request.use(req => {
         this.setState({ error: null });
+        return req;
       });
       firebase.interceptors.response.use(
         res => res,
@@ -20,11 +21,18 @@ const withErrorHandler = (WrappedComponent, firebase) => {
       );
     }
 
+    closeBackdrop = () => {
+      this.setState({ error: null });
+    };
+
     render() {
       console.log(this.state.error);
       return (
         <Aux>
-          <Modal show={this.state.error}>
+          <Modal
+            isPurchasingHandle={this.closeBackdrop}
+            show={this.state.error}
+          >
             {this.state.error ? this.state.error.message : null}
           </Modal>
           <WrappedComponent {...this.props} />
